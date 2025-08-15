@@ -45,6 +45,7 @@ _XSARM_MODELS = (
     'mobile_wx250s',
     'aloha_wx250s',
     'aloha_vx300s',
+    'miv_arm'
 )
 
 # Tuple of valid Interbotix LoCoBot models
@@ -91,7 +92,7 @@ def get_interbotix_xsarm_joints(robot_model: str) -> List[str]:
     """
     if robot_model in ('mobile_px100', 'px100'):
         return ['waist', 'shoulder', 'elbow', 'wrist_angle', 'left_finger']
-    elif robot_model in ('px150', 'rx150', 'rx200', 'wx200', 'wx250', 'vx250', 'vx300'):
+    elif robot_model in ('px150', 'rx150', 'rx200', 'wx200', 'wx250', 'vx250', 'vx300', 'miv_arm'):
         return ['waist', 'shoulder', 'elbow', 'wrist_angle', 'wrist_rotate', 'left_finger']
     elif robot_model in ('mobile_wx250s', 'wx250s', 'vx300s', 'aloha_wx250s', 'aloha_vx300s'):
         return [
