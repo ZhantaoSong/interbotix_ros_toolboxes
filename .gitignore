@@ -3,3 +3,7 @@ __pycache__/
 *.egg-info/
 *.asv
 .pytest_cache/
+
+.DS_Store
+.DS_Store?
+._*

@@ -616,6 +616,7 @@ class InterbotixArmXSInterface:
         wp_moving_time: float = 0.2,
         wp_accel_time: float = 0.1,
         wp_period: float = 0.05,
+        blocking: bool = True,
     ) -> bool:
         """
         Command a linear displacement to the end effector.
@@ -633,6 +634,7 @@ class InterbotixArmXSInterface:
             should be accelerating/decelerating (must be equal to or less than half of
             `wp_moving_time`)
         :param wp_period: (optional) duration in seconds between each waypoint
+        :param blocking: (optional) whether to block until trajectory execution is complete
         :return: `True` if a trajectory was successfully planned and executed; otherwise `False`
         :details: `T_sy` is a 4x4 transformation matrix representing the pose of a virtual frame
             w.r.t. /<robot_name>/base_link. This virtual frame has the exact same `x`, `y`, `z`,
@@ -694,6 +696,11 @@ class InterbotixArmXSInterface:
                 break
 
         if success:
+            # Store original timing parameters
+            original_moving_time = self.moving_time
+            original_accel_time = self.accel_time
+            
+            # Set timing parameters for trajectory execution
             self.set_trajectory_time(wp_moving_time, wp_accel_time)
             joint_traj.joint_names = self.group_info.joint_names
             current_positions = []
@@ -709,12 +716,18 @@ class InterbotixArmXSInterface:
                     cmd_type='group', name=self.group_name, traj=joint_traj
                 )
             )
-            self.core.get_node().get_clock().sleep_for(
-                Duration(nanoseconds=int((moving_time + wp_moving_time)*S_TO_NS))
-            )
+            
+            # Calculate actual trajectory execution time based on waypoint timing
+            actual_execution_time = N * wp_period + wp_moving_time
+            if blocking:
+                self.core.get_node().get_clock().sleep_for(
+                    Duration(nanoseconds=int(actual_execution_time * S_TO_NS))
+                )
             self.T_sb = T_sd
             self.joint_commands = joint_positions
-            self.set_trajectory_time(moving_time, accel_time)
+            
+            # Restore original timing parameters
+            self.set_trajectory_time(original_moving_time, original_accel_time)
 
         return success
 
